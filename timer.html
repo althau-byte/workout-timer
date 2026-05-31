@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Workout Timer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #time {
+      font-size: 80px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    #progress {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      border: 10px solid #444;
+      position: relative;
+      margin-bottom: 30px;
+    }
+
+    #progress-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      clip-path: inset(0 0 100% 0);
+      background: #00ff88;
+      transition: clip-path 1s linear;
+    }
+
+    #done {
+      display: none;
+      font-size: 28px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="time">--:--</div>
+
+  <div id="progress">
+    <div id="progress-fill"></div>
+  </div>
+
+  <div id="done">Timer Complete</div>
+
+  <script>
+    // Telegram WebApp API
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // Read duration from URL: ?duration=120
+    const params = new URLSearchParams(window.location.search);
+    let duration = parseInt(params.get("duration") || "60");
+
+    let remaining = duration;
+
+    const timeEl = document.getElementById("time");
+    const doneEl = document.getElementById("done");
+    const fillEl = document.getElementById("progress-fill");
+
+    function format(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m}:${s.toString().padStart(2, "0")}`;
+    }
+
+    function update() {
+      timeEl.textContent = format(remaining);
+
+      const pct = 1 - remaining / duration;
+      const clip = 100 - pct * 100;
+      fillEl.style.clipPath = `inset(${clip}% 0 0 0)`;
+
+      if (remaining <= 0) {
+        doneEl.style.display = "block";
+        tg.HapticFeedback.notificationOccurred("success");
+        return;
+      }
+
+      remaining -= 1;
+      setTimeout(update, 1000);
+    }
+
+    update();
+  </script>
+
+</body>
+</html>
