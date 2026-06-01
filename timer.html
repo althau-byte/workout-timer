@@ -5,6 +5,9 @@
   <title>Workout Timer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- REQUIRED for Telegram WebApp -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
   <style>
     body {
       background: #111;
@@ -64,13 +67,24 @@
   <div id="done">Timer Complete</div>
 
   <script>
-    // Telegram WebApp API
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Read duration from URL: ?duration=120
-    const params = new URLSearchParams(window.location.search);
-    let duration = parseInt(params.get("duration") || "60");
+    let duration = null;
+
+    // 1. Try Telegram start_param first
+    if (tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
+      duration = parseInt(tg.initDataUnsafe.start_param);
+    }
+
+    // 2. Fallback to URL query string (browser use)
+    if (!duration) {
+      const params = new URLSearchParams(window.location.search);
+      duration = parseInt(params.get("duration"));
+    }
+
+    // 3. Default
+    if (!duration || isNaN(duration)) duration = 60;
 
     let remaining = duration;
 
